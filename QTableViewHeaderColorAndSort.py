@@ -1,10 +1,9 @@
 # Demo for customizing a QTableView, QHeaderView and table sorting with a QComboBox
-# Includes how to sub-class QHeaderView, repain the header and styling
 import sys
 import copy
 from PyQt6.QtCore import QAbstractTableModel, Qt, QAbstractItemModel, QSortFilterProxyModel
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QTableView, QApplication, QMainWindow, QHeaderView, QGridLayout, QWidget, QComboBox
+from PyQt6.QtWidgets import QTableView, QApplication, QMainWindow, QHeaderView, QGridLayout, QWidget, QComboBox, QLabel
 
 
 class WindowHeaderView(QHeaderView):
@@ -179,7 +178,7 @@ if __name__ == '__main__':
     proxymodel = QSortFilterProxyModel()
     proxymodel.setSourceModel(datamodel)
 
-    # Use our custom header class to setup the
+    # Use our customer header class to setup the
     # header row so we can "draw" on it.
     headerview = WindowHeaderView(Qt.Orientation.Horizontal)
     headermodel = WindowHeaderModel()
@@ -209,6 +208,7 @@ if __name__ == '__main__':
     mainwidget = QWidget()
     tableview = QTableView()
     combobox = QComboBox()
+    label = QLabel('Filters to Column "A"')
 
     # Everything will be put on a 2 column
     # grid. The table will span columns 0 and 1
@@ -216,6 +216,7 @@ if __name__ == '__main__':
     # Once our components are initialized, put them
     # on the layout
     layout = QGridLayout()
+    layout.addWidget(label, 0, 0)
     layout.addWidget(combobox, 0, 1)
     layout.addWidget(tableview, 1, 0, 1, 2)
 
@@ -228,7 +229,7 @@ if __name__ == '__main__':
 
     # Next, we will beautify it a little
     # by resizing the columns (header) to the
-    # contents, applying our custom header
+    # contents, applying our customer header
     # and establishing the sort order when the
     # table is initially drawn with data and
     # when we select "All" data in the combo box.
@@ -249,10 +250,9 @@ if __name__ == '__main__':
     # the main window. Then, show them
     mainwidget.setLayout(layout)
     mainwidget.resize(mainwidget.sizeHint())
-    mainwindow.resize(mainwidget.sizeHint())
+    mainwindow.resize(mainwindow.sizeHint())
     mainwidget.show()
     mainwindow.show()
 
     # Enter the event loop
     sys.exit(app.exec())
-
