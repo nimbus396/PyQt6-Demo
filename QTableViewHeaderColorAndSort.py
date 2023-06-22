@@ -179,7 +179,7 @@ if __name__ == '__main__':
     proxymodel = QSortFilterProxyModel()
     proxymodel.setSourceModel(datamodel)
 
-    # Use our customer header class to setup the
+    # Use our custom header class to setup the
     # header row so we can "draw" on it.
     headerview = WindowHeaderView(Qt.Orientation.Horizontal)
     headermodel = WindowHeaderModel()
@@ -228,7 +228,7 @@ if __name__ == '__main__':
 
     # Next, we will beautify it a little
     # by resizing the columns (header) to the
-    # contents, applying our customer header
+    # contents, applying our custom header
     # and establishing the sort order when the
     # table is initially drawn with data and
     # when we select "All" data in the combo box.
