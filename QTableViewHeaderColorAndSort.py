@@ -1,10 +1,84 @@
 # Demo for customizing a QTableView, QHeaderView and table sorting with a QComboBox
+import csv
+import io
 import sys
-import copy
-from PyQt6.QtCore import QAbstractTableModel, Qt, QAbstractItemModel, QSortFilterProxyModel
-from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QTableView, QApplication, QMainWindow, QHeaderView, QGridLayout, QWidget, QComboBox, QLabel
+import copy, random
+from PyQt6.QtCore import QAbstractTableModel, Qt, QAbstractItemModel, QSortFilterProxyModel, QDateTime, QModelIndex
+from PyQt6.QtGui import QColor, QKeySequence
+from PyQt6.QtWidgets import QTableView, QApplication, QMainWindow, QHeaderView, QGridLayout, QWidget, QComboBox, QLabel, \
+    QMenu
+import pandas as pd
 
+
+class WindowTableView(QTableView):
+
+    def __init__(self):
+        super().__init__()
+
+    # Define a pop-up menu when we right click
+    # and allow copy key to work
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        mcopy = menu.addAction("Copy")
+        mcopy.setShortcut(QKeySequence('Ctrl+C'))
+
+        tcopy = menu.addAction("Copy Table")
+        tcopy.setShortcut(QKeySequence('Ctrl+T'))
+        action = menu.exec(self.mapToGlobal(event.pos()))
+
+        if action == mcopy:
+            self.copySelection()
+
+        if action == tcopy:
+            self.copyWithHeader()
+    """
+    Copy the data to the clipboard
+    """
+    def copySelection(self):
+        selection = self.selectedIndexes()
+        if selection:
+            rows = sorted(index.row() for index in selection)
+            columns = sorted(index.column() for index in selection)
+            rowcount = rows[-1] - rows[0] + 1
+            colcount = columns[-1] - columns[0] + 1
+            table = [[''] * colcount for _ in range(rowcount)]
+            for index in selection:
+                row = index.row() - rows[0]
+                column = index.column() - columns[0]
+                table[row][column] = index.data()
+
+                if type(table[row][column]) == QDateTime:
+                    table[row][column]=table[row][column].toString("MM/dd/yyyy hh:mm:ss")
+            stream = io.StringIO()
+            csv.writer(stream, delimiter='\t').writerows(table)
+            QApplication.clipboard().setText(stream.getvalue())
+
+    def copyWithHeader(self):
+        rowcount = self.model().rowCount()
+        colcount = self.model().columnCount()
+        headermodel = self.horizontalHeader().model()
+        tablemodel = self.model()
+        rowdata = []
+        dataframe = []
+        # Print the header
+        for j in range(0, colcount):
+            rowdata.append(headermodel.headerData(j, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole))
+        dataframe.append(copy.copy(rowdata))
+        rowdata.clear()
+        # Print the detail
+        for i in range(rowcount):
+            for j in range(colcount):
+                modeldata = tablemodel.index(i, j).data()
+                if type(modeldata) == QDateTime:
+                    rowdata.append(modeldata.toString('MM/dd/yyyy hh:mm:ss'))
+                elif type(modeldata) == int or type(modeldata) == float:
+                    rowdata.append(str(modeldata))
+                else:
+                    rowdata.append(modeldata)
+            dataframe.append(copy.copy(rowdata))
+            rowdata.clear()
+        df = pd.DataFrame(dataframe)
+        df.to_clipboard()
 
 class WindowHeaderView(QHeaderView):
     def __init__(self, orientation):
@@ -32,6 +106,7 @@ class WindowHeaderView(QHeaderView):
     # Overriden
     def setModel(self, model):
         super().setModel(model)
+
 
     # Overridden
     # This is a very short custom painting routine for the header. This is where
@@ -156,9 +231,9 @@ class WindowTableModel(QAbstractTableModel):
 if __name__ == '__main__':
     # Make the event loop for the application
     app = QApplication([])
+    QApplication.setStyle('fusion')
     # Setup some data
     data = a=[[x for x in random.sample(range(1,20),5)] for i in range(random.randrange(50))]
-
     # These are the models for the application
     # Even though there is a datamodel with the
     # data, we want to be able to sort and filter
@@ -201,7 +276,7 @@ if __name__ == '__main__':
     # create the table and a combo box for filtering.
     mainwindow = QMainWindow()
     mainwidget = QWidget()
-    tableview = QTableView()
+    tableview = WindowTableView()
     combobox = QComboBox()
     label = QLabel('Filters to Column "A"')
 
@@ -251,3 +326,4 @@ if __name__ == '__main__':
 
     # Enter the event loop
     sys.exit(app.exec())
+
