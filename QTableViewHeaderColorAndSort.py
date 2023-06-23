@@ -157,12 +157,7 @@ if __name__ == '__main__':
     # Make the event loop for the application
     app = QApplication([])
     # Setup some data
-    data = [
-        [1, 2, 3, 4, 5],
-        [6, 7, 8, 9, 10],
-        [11, 12, 13, 14, 15],
-        [16, 17, 18, 19, 20],
-    ]
+    data = a=[[x for x in random.sample(range(1,20),5)] for i in range(random.randrange(50))]
 
     # These are the models for the application
     # Even though there is a datamodel with the
